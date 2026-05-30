@@ -43,7 +43,7 @@ There are no automated tests in this project yet.
 
 - ASP.NET Core MVC 10
 - ASP.NET Core Identity — UI served from the package (not scaffolded into the project)
-- Entity Framework Core 10 with SQLite (`app.db`)
+- Entity Framework Core 10 with SQLite (`app.db` at project root)
 - Default culture: `es-EC` — currency symbol `$` (Ecuador uses USD)
 - Bootstrap + jQuery Validation (via `wwwroot/lib/`)
 
@@ -56,7 +56,7 @@ The app follows standard ASP.NET Core MVC. `Program.cs` wires up EF Core, Identi
 ```
 ApplicationUser (IdentityUser)
   ├── Assets[]          (one-to-many, OwnerId FK)
-  ├── TradeOffers[]     (one-to-many, OwnerId FK)
+  ├── TradeOffers[]     (one-to-many, OwnerId FK)  ← user who posted the offer
   ├── ReviewsGiven[]    (one-to-many, FromUserId FK)
   └── ReviewsReceived[] (one-to-many, ToUserId FK)
 
@@ -66,6 +66,8 @@ Asset
 
 All FKs are configured with `DeleteBehavior.Restrict` in `ApplicationDbContext.OnModelCreating` because SQLite does not support multiple cascade paths.
 
+**`TradeOffer.OwnerId`** is the user who *posted* the trade offer (typically the asset owner wanting to sell or trade). This is distinct from the user who responds to the offer.
+
 ### Current implementation state
 
 Only `HomeController` exists (Index, Privacy, Error). No CRUD controllers for Asset, TradeOffer, or Review have been implemented yet.
@@ -73,14 +75,20 @@ Only `HomeController` exists (Index, Privacy, Error). No CRUD controllers for As
 ### Identity
 
 - `ApplicationUser` extends `IdentityUser` with: `DisplayName`, `City`, `Country`, `AvatarUrl`, `ReputationScore`, `CreatedAt`.
-- Identity UI pages (register, login, account management) are served from the `Microsoft.AspNetCore.Identity.UI` package — they are **not** Razor files in this repo.
+- Identity UI pages (register, login, account management) are served from the `Microsoft.AspNetCore.Identity.UI` package. The only Identity file in this repo is `Areas/Identity/Pages/_ViewStart.cshtml`, which pins those pages to the shared layout.
 - Email confirmation is **disabled in development** (`RequireConfirmedAccount = false`) — re-enable before production.
 
 ## Database conventions
 
 - All FK relationships use `DeleteBehavior.Restrict`.
-- Soft delete on `Asset` via `IsActive (bool, default true)` — do not hard-delete Asset rows; always filter on `IsActive == true` in queries.
+- Soft delete on `Asset` via `IsActive` (`bool`, default `true`) — do not hard-delete Asset rows; always filter `IsActive == true` in queries.
 - Migrations live in `Data/Migrations/`.
+- **Decimal fields must use `[Column(TypeName = "TEXT")]`** — SQLite has no native decimal type; `Asset.EstimatedValue` and `TradeOffer.Price` both follow this pattern. Any new monetary field must do the same.
+
+## Model field constraints
+
+- `Asset.Year`: 1970–2010 (retro range enforced by `[Range]`)
+- `Review.Rating`: 1–5 integer
 
 ## Enums
 
