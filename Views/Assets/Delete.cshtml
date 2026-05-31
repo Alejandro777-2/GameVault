@@ -1,0 +1,43 @@
+@model Asset
+@{
+    ViewData["Title"] = "Eliminar activo";
+}
+
+<h1>Eliminar activo</h1>
+
+<div class="row mt-4">
+    <div class="col-12 col-md-7 col-lg-5">
+        <div class="alert alert-warning" role="alert">
+            ¿Está seguro que desea eliminar este activo? Esta acción no se puede deshacer.
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Título</dt>
+                    <dd class="col-7">@Model.Title</dd>
+
+                    <dt class="col-5">Plataforma</dt>
+                    <dd class="col-7">@Model.Platform.GetDisplayName()</dd>
+
+                    <dt class="col-5">Año</dt>
+                    <dd class="col-7">@Model.Year</dd>
+
+                    <dt class="col-5">Estado</dt>
+                    <dd class="col-7">@Model.Condition.GetDisplayName()</dd>
+
+                    <dt class="col-5">Valor estimado</dt>
+                    <dd class="col-7">$ @Model.EstimatedValue.ToString("N2", new CultureInfo("es-EC"))</dd>
+                </dl>
+            </div>
+        </div>
+
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

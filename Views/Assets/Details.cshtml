@@ -1,0 +1,81 @@
+@model AssetDetailsViewModel
+@{
+    ViewData["Title"] = Model.Asset.Title;
+    var asset = Model.Asset;
+}
+
+<h1>@asset.Title</h1>
+
+<div class="row mt-4">
+    <div class="col-md-5">
+        @if (!string.IsNullOrEmpty(asset.ImageUrl))
+        {
+            <img src="@asset.ImageUrl" class="img-fluid rounded shadow-sm w-100"
+                 style="max-height:400px; object-fit:contain" alt="@asset.Title" />
+        }
+        else
+        {
+            <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm"
+                 style="height:300px">
+                <span class="text-muted">Sin imagen</span>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-7">
+        <div class="card mb-3">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Plataforma</dt>
+                    <dd class="col-7">
+                        <span class="badge bg-secondary">@asset.Platform.GetDisplayName()</span>
+                    </dd>
+
+                    <dt class="col-5">Año de lanzamiento</dt>
+                    <dd class="col-7">@asset.Year</dd>
+
+                    <dt class="col-5">Región</dt>
+                    <dd class="col-7">@asset.Region.GetDisplayName()</dd>
+
+                    <dt class="col-5">Estado de conservación</dt>
+                    <dd class="col-7">@asset.Condition.GetDisplayName()</dd>
+
+                    <dt class="col-5">Valor estimado</dt>
+                    <dd class="col-7 fw-bold fs-5">
+                        $ @asset.EstimatedValue.ToString("N2", new CultureInfo("es-EC"))
+                    </dd>
+
+                    @if (!string.IsNullOrWhiteSpace(asset.Description))
+                    {
+                        <dt class="col-5">Descripción</dt>
+                        <dd class="col-7" style="white-space:pre-line">@asset.Description</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <p class="text-muted small mb-1">
+            Publicado por <strong>@Model.OwnerDisplayName</strong>
+            @{
+                var location = new[] { Model.OwnerCity, Model.OwnerCountry }
+                    .Where(s => !string.IsNullOrWhiteSpace(s));
+                if (location.Any())
+                {
+                    <span>desde @string.Join(", ", location)</span>
+                }
+            }
+        </p>
+        <p class="text-muted small mb-4">
+            Registrado el @asset.CreatedAt.ToString("dd 'de' MMMM 'de' yyyy", new CultureInfo("es-EC"))
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">Volver al catálogo</a>
+            @if (Model.IsCurrentUserOwner)
+            {
+                <a asp-action="Edit" asp-route-id="@asset.Id" class="btn btn-warning">Editar</a>
+                <a asp-action="Delete" asp-route-id="@asset.Id" class="btn btn-outline-danger">Eliminar</a>
+            }
+        </div>
+    </div>
+</div>
