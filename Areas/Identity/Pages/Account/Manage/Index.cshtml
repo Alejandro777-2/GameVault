@@ -20,6 +20,14 @@
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
             </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.City" class="form-control" placeholder="Ej: Quito, Guayaquil..." />
+                <label asp-for="Input.City" class="form-label"></label>
+                <span asp-validation-for="Input.City" class="text-danger"></span>
+                <small class="text-muted" style="font-size:0.75rem">
+                    Tu ciudad aparece en tu perfil público y en el mapa de coleccionistas.
+                </small>
+            </div>
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Guardar</button>
         </form>
     </div>

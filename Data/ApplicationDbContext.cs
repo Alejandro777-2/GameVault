@@ -10,6 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<TradeOffer> TradeOffers => Set<TradeOffer>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -48,6 +49,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(u => u.ReviewsReceived)
                 .HasForeignKey(r => r.ToUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<WishlistItem>(entity =>
+        {
+            entity.HasOne(w => w.User)
+                .WithMany(u => u.WishlistItems)
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(w => w.Asset)
+                .WithMany()
+                .HasForeignKey(w => w.AssetId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(w => new { w.UserId, w.AssetId }).IsUnique();
         });
     }
 }

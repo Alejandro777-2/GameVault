@@ -1,0 +1,121 @@
+@model IEnumerable<GameVault.Models.TradeOffer>
+@using System.Globalization
+@using GameVault.Helpers
+@{
+    ViewData["Title"] = "Mis ofertas";
+}
+
+@functions {
+    static string TypeBadgeCls(TradeType t) => t switch
+    {
+        TradeType.Sale  => "px-badge-cyan",
+        TradeType.Both  => "px-badge-purple",
+        _               => "px-badge-yellow"
+    };
+
+    static string StatusBadgeCls(TradeStatus s) => s switch
+    {
+        TradeStatus.Active    => "px-badge-green",
+        TradeStatus.Cancelled => "px-badge-coral",
+        TradeStatus.Pending   => "px-badge-yellow",
+        _                     => "px-badge-good"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">MIS OFERTAS</h1>
+    <a asp-action="Index" class="px-btn px-btn-secondary px-btn-sm">&#128722; VER MARKETPLACE</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <div class="px-card d-inline-block p-5">
+            <svg width="48" height="48" viewBox="0 0 16 16" style="image-rendering:pixelated">
+                <rect x="1" y="4" width="14" height="10" fill="#8B4513"/>
+                <rect x="1" y="4" width="14" height="2" fill="#FFD23F"/>
+                <rect x="6" y="1" width="4" height="3" fill="#1A1A2E"/>
+                <rect x="4" y="7" width="3" height="5" fill="#FFD23F"/>
+                <rect x="9" y="7" width="3" height="5" fill="#FFD23F"/>
+            </svg>
+            <p class="mt-3 mb-2 px-font fw-bold">No tienes ofertas publicadas</p>
+            <p class="mb-3" style="color:var(--gv-muted); font-size:0.85rem">
+                Ve al catálogo, selecciona un activo tuyo y publícalo en el marketplace.
+            </p>
+            <a asp-controller="Assets" asp-action="Index" class="px-btn px-btn-primary px-btn-sm">
+                IR AL CATÁLOGO
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="px-card">
+        <table class="table table-borderless mb-0" style="font-family:'Courier New',monospace">
+            <thead style="border-bottom:2px solid var(--gv-ink); background:var(--gv-yellow-soft)">
+                <tr>
+                    <th class="px-font" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; padding:12px 16px">Activo</th>
+                    <th class="px-font" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; padding:12px 16px">Tipo</th>
+                    <th class="px-font" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; padding:12px 16px">Precio</th>
+                    <th class="px-font" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; padding:12px 16px">Estado</th>
+                    <th class="px-font" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; padding:12px 16px">Fecha</th>
+                    <th style="padding:12px 16px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var offer in Model)
+                {
+                    <tr style="border-bottom:1px solid var(--gv-line)">
+                        <td style="padding:12px 16px; vertical-align:middle">
+                            <a asp-action="Details" asp-route-id="@offer.Id"
+                               class="fw-bold text-decoration-none" style="color:var(--gv-ink)">
+                                @offer.Asset.Title
+                            </a>
+                            <br />
+                            <small style="color:var(--gv-muted); font-size:0.75rem">@offer.Asset.Platform.GetDisplayName()</small>
+                        </td>
+                        <td style="padding:12px 16px; vertical-align:middle">
+                            <span class="px-badge @TypeBadgeCls(offer.Type)">@offer.Type.GetDisplayName()</span>
+                        </td>
+                        <td style="padding:12px 16px; vertical-align:middle">
+                            @if (offer.Price.HasValue)
+                            {
+                                <span class="px-font fw-bold" style="color:var(--gv-purple)">
+                                    $ @offer.Price.Value.ToString("N2", new CultureInfo("es-EC"))
+                                </span>
+                            }
+                            else
+                            {
+                                <span style="color:var(--gv-muted)">—</span>
+                            }
+                        </td>
+                        <td style="padding:12px 16px; vertical-align:middle">
+                            <span class="px-badge @StatusBadgeCls(offer.Status)">@offer.Status.GetDisplayName()</span>
+                        </td>
+                        <td style="padding:12px 16px; vertical-align:middle">
+                            <small style="color:var(--gv-muted)">
+                                @offer.CreatedAt.ToString("dd/MM/yyyy", new CultureInfo("es-EC"))
+                            </small>
+                        </td>
+                        <td style="padding:12px 16px; vertical-align:middle; text-align:right">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a asp-action="Details" asp-route-id="@offer.Id"
+                                   class="px-btn px-btn-secondary px-btn-sm">VER</a>
+                                @if (offer.Status == TradeStatus.Active)
+                                {
+                                    <form method="post" asp-action="Cancel" asp-route-id="@offer.Id"
+                                          onsubmit="return confirm('¿Seguro que deseas cancelar esta oferta?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="px-btn px-btn-danger px-btn-sm">
+                                            &#10006; CANCELAR
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,123 @@
+@model UserProfileViewModel
+@using System.Globalization
+@{
+    var user = Model.User;
+    var displayName = string.IsNullOrWhiteSpace(user.DisplayName) ? "Coleccionista anónimo" : user.DisplayName;
+    ViewData["Title"] = displayName;
+    var culture = new CultureInfo("es-EC");
+
+    var initial = displayName[0].ToString().ToUpper();
+
+    var location = new[] { user.City, user.Country }
+        .Where(s => !string.IsNullOrWhiteSpace(s));
+
+    string ConditionBadgeClass(Condition c) => c switch
+    {
+        Condition.Mint => "bg-success",
+        Condition.Good => "bg-primary",
+        Condition.Fair => "bg-warning text-dark",
+        Condition.Poor => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="row align-items-center mb-5">
+    <div class="col-auto">
+        @if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
+        {
+            <img src="@user.AvatarUrl"
+                 class="rounded-circle shadow-sm"
+                 style="width:80px;height:80px;object-fit:cover"
+                 alt="@displayName" />
+        }
+        else
+        {
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm fw-bold fs-3"
+                 style="width:80px;height:80px">
+                @initial
+            </div>
+        }
+    </div>
+    <div class="col">
+        <h1 class="mb-1">@displayName</h1>
+        @if (location.Any())
+        {
+            <p class="text-muted mb-1">Coleccionista en @string.Join(", ", location)</p>
+        }
+        <p class="text-muted small mb-0">
+            Miembro desde @user.CreatedAt.ToString("MMMM 'de' yyyy", culture)
+        </p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card border-0 bg-light text-center py-4 px-3">
+            <p class="text-uppercase text-muted small mb-1 fw-semibold">Activos catalogados</p>
+            <div class="display-4 fw-bold text-primary">@Model.TotalActiveAssets</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-light text-center py-4 px-3">
+            <p class="text-uppercase text-muted small mb-1 fw-semibold">Reputación</p>
+            <div class="display-4 fw-bold text-primary">@user.ReputationScore <small class="fs-6 fw-normal">puntos</small></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-light text-center py-4 px-3">
+            <p class="text-uppercase text-muted small mb-1 fw-semibold">Año de registro</p>
+            <div class="display-4 fw-bold text-primary">@user.CreatedAt.Year</div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-4">Catálogo de @displayName</h2>
+
+@if (!Model.RecentAssets.Any())
+{
+    <div class="d-flex justify-content-center">
+        <div class="card border-0 bg-light text-center py-5 px-4" style="max-width:480px;width:100%">
+            <p class="mb-0 text-muted">Este coleccionista aún no ha catalogado activos.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var asset in Model.RecentAssets)
+        {
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm position-relative">
+                    @if (!string.IsNullOrEmpty(asset.ImageUrl))
+                    {
+                        <img src="@asset.ImageUrl" class="card-img-top"
+                             style="height:200px; object-fit:cover" alt="@asset.Title" />
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                             style="height:200px">
+                            <span class="text-muted small">Sin imagen</span>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate" title="@asset.Title">@asset.Title</h5>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary">@asset.Platform.GetDisplayName()</span>
+                            <span class="badge @ConditionBadgeClass(asset.Condition)">@asset.Condition.GetDisplayName()</span>
+                        </div>
+                        <p class="card-text small text-muted mb-1">Año: @asset.Year</p>
+                        <p class="card-text fw-bold">
+                            $ @asset.EstimatedValue.ToString("N0", culture)
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent small text-muted">
+                        @(string.IsNullOrWhiteSpace(asset.OwnerDisplayName) ? "Coleccionista anónimo" : asset.OwnerDisplayName)
+                    </div>
+                    <a class="stretched-link" asp-controller="Assets" asp-action="Details" asp-route-id="@asset.Id"
+                       aria-label="Ver @asset.Title"></a>
+                </div>
+            </div>
+        }
+    </div>
+}

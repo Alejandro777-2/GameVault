@@ -1,0 +1,189 @@
+@model MarketplaceIndexViewModel
+@using System.Globalization
+@using GameVault.Helpers
+@{
+    ViewData["Title"] = "Marketplace";
+}
+
+@functions {
+    static string TypeBadgeCls(TradeType t) => t switch
+    {
+        TradeType.Sale  => "px-badge-cyan",
+        TradeType.Both  => "px-badge-purple",
+        _               => "px-badge-yellow"
+    };
+
+    static string PlatformCardBg(Platform p)
+    {
+        string[] colors = { "#FFD23F", "#5B2C9E20", "#FF6B6B30", "#06B6D430", "#C0DD97" };
+        return colors[(int)p % colors.Length];
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">MARKETPLACE</h1>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-action="MyOffers" class="px-btn px-btn-secondary px-btn-sm">MIS OFERTAS</a>
+    }
+</div>
+
+<form method="get" asp-action="Index" class="px-card p-3 mb-4">
+    <input type="hidden" name="page" value="1" />
+    <div class="row g-2 align-items-end">
+        <div class="col-6 col-md-4">
+            <label class="form-label">Plataforma</label>
+            <select name="platform" class="form-select">
+                <option value="">Todas las plataformas</option>
+                @foreach (var item in Html.GetEnumSelectList<Platform>())
+                {
+                    var sel = Model.PlatformFilter.HasValue
+                              && (int)Model.PlatformFilter.Value == int.Parse(item.Value!);
+                    <option value="@item.Value" selected="@(sel ? "selected" : null)">@item.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <label class="form-label">Tipo de oferta</label>
+            <select name="type" class="form-select">
+                <option value="">Todos los tipos</option>
+                @foreach (var item in Html.GetEnumSelectList<TradeType>())
+                {
+                    var sel = Model.TypeFilter.HasValue
+                              && (int)Model.TypeFilter.Value == int.Parse(item.Value!);
+                    <option value="@item.Value" selected="@(sel ? "selected" : null)">@item.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <button type="submit" class="px-btn px-btn-primary w-100">FILTRAR</button>
+        </div>
+        <div class="col-6 col-md-1">
+            <a asp-action="Index" class="px-btn px-btn-secondary w-100 text-center" title="Limpiar filtros">&#10005;</a>
+        </div>
+    </div>
+</form>
+
+@if (!Model.Offers.Any())
+{
+    <div class="text-center py-5">
+        <div class="px-card d-inline-block p-5">
+            <svg width="48" height="48" viewBox="0 0 16 16" style="image-rendering:pixelated">
+                <rect x="1" y="4" width="14" height="10" fill="#8B4513"/>
+                <rect x="1" y="4" width="14" height="2" fill="#FFD23F"/>
+                <rect x="6" y="1" width="4" height="3" fill="#1A1A2E"/>
+                <rect x="7" y="1" width="2" height="3" fill="#5B2C9E"/>
+                <rect x="4" y="7" width="3" height="5" fill="#FFD23F"/>
+                <rect x="9" y="7" width="3" height="5" fill="#FFD23F"/>
+            </svg>
+            <p class="mt-3 mb-2 px-font fw-bold">No hay ofertas disponibles</p>
+            <p class="mb-0" style="color:var(--gv-muted); font-size:0.85rem">
+                Prueba con otros filtros
+            </p>
+            @if (Model.PlatformFilter != null || Model.TypeFilter != null)
+            {
+                <div class="mt-3">
+                    <a asp-action="Index" class="px-btn px-btn-secondary px-btn-sm">LIMPIAR FILTROS</a>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <p class="px-font mb-3" style="font-size:0.8rem; color:var(--gv-muted)">
+        @Model.TotalItems oferta(s) activa(s)
+    </p>
+
+    <div class="row g-4">
+        @foreach (var offer in Model.Offers)
+        {
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="px-card h-100 position-relative d-flex flex-column" style="overflow:hidden">
+                    @if (!string.IsNullOrEmpty(offer.AssetImageUrl))
+                    {
+                        <div class="gv-card-thumb">
+                            <img src="@offer.AssetImageUrl" alt="@offer.AssetTitle" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="gv-card-thumb" style="background:@PlatformCardBg(offer.AssetPlatform)">
+                            <svg width="32" height="32" viewBox="0 0 16 16" style="image-rendering:pixelated; opacity:0.6">
+                                <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                                <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                                <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                            </svg>
+                        </div>
+                    }
+
+                    <div class="p-3 flex-grow-1">
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <span class="px-badge @TypeBadgeCls(offer.Type)">@offer.Type.GetDisplayName()</span>
+                            <span class="px-badge px-badge-yellow" style="font-size:0.65rem">@offer.AssetPlatform.GetDisplayName()</span>
+                        </div>
+                        <h6 class="px-font fw-bold text-truncate mb-2" title="@offer.AssetTitle">@offer.AssetTitle</h6>
+                        @if (offer.Price.HasValue)
+                        {
+                            <p class="px-font fw-bold mb-0" style="color:var(--gv-purple); font-size:1.1rem">
+                                $ @offer.Price.Value.ToString("N2", new CultureInfo("es-EC"))
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="px-font mb-0" style="color:var(--gv-muted); font-size:0.85rem">
+                                Solo intercambio
+                            </p>
+                        }
+                    </div>
+
+                    <div class="px-3 pb-2 pt-1" style="border-top:1px solid var(--gv-line)">
+                        <small class="px-font" style="font-size:0.7rem; color:var(--gv-muted)">
+                            Por
+                            <a asp-controller="Users" asp-action="Profile" asp-route-id="@offer.OwnerId"
+                               class="position-relative z-1 text-decoration-none fw-bold"
+                               style="color:var(--gv-purple)">
+                                @(string.IsNullOrWhiteSpace(offer.OwnerDisplayName) ? "Anónimo" : offer.OwnerDisplayName)
+                            </a>
+                        </small>
+                    </div>
+
+                    <a class="stretched-link" asp-action="Details" asp-route-id="@offer.Id"
+                       aria-label="Ver oferta de @offer.AssetTitle"></a>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Paginación del marketplace" class="mt-5">
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                @if (Model.CurrentPage > 1)
+                {
+                    <a class="px-btn px-btn-secondary px-btn-sm"
+                       asp-action="Index"
+                       asp-route-page="@(Model.CurrentPage - 1)"
+                       asp-route-platform="@Model.PlatformFilter"
+                       asp-route-type="@Model.TypeFilter">&#8592; ANTERIOR</a>
+                }
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <a class="px-btn px-btn-sm @(i == Model.CurrentPage ? "px-btn-primary" : "px-btn-secondary")"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-platform="@Model.PlatformFilter"
+                       asp-route-type="@Model.TypeFilter">@i</a>
+                }
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a class="px-btn px-btn-secondary px-btn-sm"
+                       asp-action="Index"
+                       asp-route-page="@(Model.CurrentPage + 1)"
+                       asp-route-platform="@Model.PlatformFilter"
+                       asp-route-type="@Model.TypeFilter">SIGUIENTE &#8594;</a>
+                }
+            </div>
+        </nav>
+    }
+}

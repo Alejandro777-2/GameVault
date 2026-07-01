@@ -1,31 +1,361 @@
+/* ─── Design tokens ─────────────────────────────────────── */
+:root {
+  --gv-yellow: #FFD23F;
+  --gv-yellow-soft: #FFF8DC;
+  --gv-purple: #5B2C9E;
+  --gv-cyan: #06B6D4;
+  --gv-coral: #FF6B6B;
+  --gv-green: #3B6D11;
+  --gv-green-soft: #C0DD97;
+  --gv-bg: #FAFAF7;
+  --gv-card: #FFFFFF;
+  --gv-ink: #1A1A2E;
+  --gv-muted: #6B6B7B;
+  --gv-line: #E5E5E0;
+  --gv-shadow: 0 0 0 0 var(--gv-ink);
+  --gv-shadow-y: 4px 4px 0 var(--gv-ink);
+  --gv-shadow-sm: 2px 2px 0 var(--gv-ink);
+  --gv-shadow-lg: 6px 6px 0 var(--gv-ink);
+  --gv-shadow-accent: 6px 6px 0 var(--gv-yellow);
+}
+
+/* ─── Global ─────────────────────────────────────────────── */
 html {
   font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
   position: relative;
   min-height: 100%;
 }
 
+@media (min-width: 768px) {
+  html { font-size: 16px; }
+}
+
 body {
-  margin-bottom: 60px;
+  background: var(--gv-bg);
+  background-image: radial-gradient(circle, var(--gv-line) 1px, transparent 1px);
+  background-size: 14px 14px;
+  color: var(--gv-ink);
+  font-family: 'Inter', Arial, sans-serif;
+  margin-bottom: 0;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--gv-ink);
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+h1::before { content: "► "; color: var(--gv-purple); }
+
+/* ─── Pixel font utility ────────────────────────────────── */
+.px-font {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0;
+}
+
+/* ─── Cards ─────────────────────────────────────────────── */
+.px-card {
+  background: var(--gv-card);
+  border: 2px solid var(--gv-ink);
+  box-shadow: 3px 3px 0 var(--gv-ink);
+  border-radius: 0;
+}
+
+.px-card-accent {
+  background: var(--gv-card);
+  border: 3px solid var(--gv-ink);
+  box-shadow: 6px 6px 0 var(--gv-yellow);
+  border-radius: 0;
+}
+
+/* ─── Buttons ───────────────────────────────────────────── */
+.px-btn {
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  border: 2px solid var(--gv-ink);
+  border-radius: 0;
+  padding: 10px 20px;
+  box-shadow: 4px 4px 0 var(--gv-ink);
+  transition: transform 0.05s, box-shadow 0.05s;
+  text-decoration: none;
+  display: inline-block;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.px-btn:hover, .px-btn:focus {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--gv-ink);
+  text-decoration: none;
+}
+
+.px-btn:active { transform: translate(4px, 4px); box-shadow: none; }
+
+.px-btn-primary { background: var(--gv-yellow); color: var(--gv-ink); }
+.px-btn-primary:hover, .px-btn-primary:focus { color: var(--gv-ink); }
+
+.px-btn-secondary { background: #fff; color: var(--gv-ink); }
+.px-btn-secondary:hover, .px-btn-secondary:focus { color: var(--gv-ink); }
+
+.px-btn-danger { background: var(--gv-coral); color: #fff; }
+.px-btn-danger:hover, .px-btn-danger:focus { color: #fff; }
+
+.px-btn-success { background: var(--gv-green); color: #fff; }
+.px-btn-success:hover, .px-btn-success:focus { color: #fff; }
+
+.px-btn-sm {
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  box-shadow: 3px 3px 0 var(--gv-ink);
+}
+.px-btn-sm:hover, .px-btn-sm:focus {
+  box-shadow: 1px 1px 0 var(--gv-ink);
+}
+
+/* ─── Badges ────────────────────────────────────────────── */
+.px-badge {
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.7rem;
+  border: 1.5px solid var(--gv-ink);
+  padding: 2px 8px;
+  border-radius: 0;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.px-badge-yellow { background: var(--gv-yellow); color: var(--gv-ink); }
+.px-badge-purple { background: var(--gv-purple); color: var(--gv-yellow); }
+.px-badge-cyan   { background: var(--gv-cyan); color: #042C53; }
+.px-badge-coral  { background: var(--gv-coral); color: #fff; }
+.px-badge-green  { background: var(--gv-green-soft); color: #173404; border-color: var(--gv-green); }
+.px-badge-mint   { background: var(--gv-green-soft); color: #173404; border-color: var(--gv-green); }
+.px-badge-good   { background: #B5D4F4; color: #042C53; border-color: #185FA5; }
+.px-badge-fair   { background: #F5C4B3; color: #4A1B0C; border-color: #BA7517; }
+.px-badge-poor   { background: var(--gv-coral); color: #fff; }
+
+/* ─── Forms ─────────────────────────────────────────────── */
+.px-input,
+.form-control,
+.form-select,
+textarea.form-control {
+  background: #fff;
+  border: 2px solid var(--gv-ink) !important;
+  border-radius: 0 !important;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.05);
+  padding: 9px 12px;
+}
+
+.px-input:focus,
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--gv-purple) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.05), 0 0 0 3px var(--gv-yellow) !important;
+  outline: none;
+}
+
+.px-label,
+.form-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: var(--gv-purple);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.px-label::before,
+.form-label::before { content: "► "; }
+
+/* Keep form-floating functional (label stays on top of input) */
+.form-floating > label {
+  font-size: 0.75rem;
+  color: var(--gv-purple);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  top: 0;
+  padding-top: 10px;
+}
+
+.form-floating > label::before { content: "► "; }
+
+/* ─── Divider ───────────────────────────────────────────── */
+.px-divider {
+  border: none;
+  border-top: 2px dashed var(--gv-ink);
+  margin: 1rem 0;
+}
+
+/* ─── Section title ─────────────────────────────────────── */
+.px-section-title {
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--gv-ink);
+  font-size: 0.85rem;
+}
+
+/* ─── Stat cards ────────────────────────────────────────── */
+.px-stat-card {
+  background: var(--gv-yellow-soft);
+  border: 2px solid var(--gv-ink);
+  box-shadow: 3px 3px 0 var(--gv-ink);
+  padding: 16px;
+  text-align: center;
+  border-radius: 0;
+}
+
+.px-stat-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--gv-purple);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.px-stat-value {
+  font-family: 'Courier New', monospace;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--gv-ink);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+/* ─── Alerts ────────────────────────────────────────────── */
+.px-alert {
+  border: 2px solid var(--gv-ink);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--gv-ink);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+}
+
+.alert-success.px-alert { background: var(--gv-green-soft); color: #173404; }
+.alert-danger.px-alert  { background: #F5C4B3; color: #4A1B0C; }
+.alert-warning.px-alert { background: var(--gv-yellow); color: var(--gv-ink); }
+
+/* ─── Tables ────────────────────────────────────────────── */
+table.px-table { border-collapse: collapse; width: 100%; }
+table.px-table th {
+  background: var(--gv-yellow);
+  color: var(--gv-ink);
+  border: 2px solid var(--gv-ink);
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  padding: 10px;
+  text-align: left;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+table.px-table td {
+  border: 2px solid var(--gv-ink);
+  padding: 9px 10px;
+  background: #fff;
+}
+table.px-table tr:nth-child(even) td { background: var(--gv-yellow-soft); }
+
+/* ─── Navbar ────────────────────────────────────────────── */
+.gv-navbar {
+  background: #fff;
+  border-bottom: 3px solid var(--gv-ink);
+}
+
+.gv-nav-link {
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gv-ink) !important;
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 3px solid transparent;
+  transition: border-color 0.1s, color 0.1s;
+  display: inline-block;
+}
+
+.gv-nav-link:hover, .gv-nav-link:focus {
+  color: var(--gv-purple) !important;
+  border-bottom-color: var(--gv-yellow);
+  text-decoration: none;
+}
+
+.gv-nav-link.active {
+  border-bottom: 3px solid var(--gv-yellow);
+}
+
+.gv-nav-link.gv-nav-disabled {
+  color: var(--gv-muted) !important;
+  cursor: default;
+}
+
+/* ─── Footer ────────────────────────────────────────────── */
+.gv-footer {
+  background: var(--gv-ink);
+  border-top: 3px solid var(--gv-yellow);
+  color: var(--gv-yellow);
+  padding: 24px 0;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 4rem;
+}
+
+.gv-footer a {
+  color: var(--gv-yellow);
+  text-decoration: none;
+}
+
+/* ─── Bootstrap focus ring override ────────────────────── */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 3px var(--gv-yellow);
+}
+
+/* ─── Asset card image header ───────────────────────────── */
+.gv-card-thumb {
+  height: 78px;
+  border-bottom: 2px solid var(--gv-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gv-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ─── Details definition list ───────────────────────────── */
+.px-dl dt {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gv-muted);
+}
+
+.px-dl dd {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--gv-ink);
+  margin-bottom: 0.5rem;
 }

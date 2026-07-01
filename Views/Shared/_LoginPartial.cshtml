@@ -1,27 +1,24 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using GameVault.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
+<div class="d-flex align-items-center gap-2">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Gestionar cuenta">Hola, @User.Identity?.Name</a>
-    </li>
-    <li class="nav-item">
-        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button type="submit" class="nav-link btn btn-link text-dark">Cerrar sesión</button>
-        </form>
-    </li>
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.DisplayName ?? User.Identity?.Name ?? "Usuario";
+    <a class="px-badge px-badge-yellow text-decoration-none"
+       asp-area="Identity" asp-page="/Account/Manage/Index"
+       title="Gestionar cuenta">@displayName</a>
+    <form class="d-inline m-0" asp-area="Identity" asp-page="/Account/Logout"
+          asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+        <button type="submit" class="px-btn px-btn-secondary px-btn-sm">CERRAR SESIÓN</button>
+    </form>
 }
 else
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Registrarse</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Iniciar sesión</a>
-    </li>
+    <a class="gv-nav-link" asp-area="Identity" asp-page="/Account/Login">INICIAR SESIÓN</a>
+    <a class="px-btn px-btn-primary px-btn-sm" asp-area="Identity" asp-page="/Account/Register">CREAR CUENTA</a>
 }
-</ul>
+</div>

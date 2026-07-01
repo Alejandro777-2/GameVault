@@ -1,0 +1,22 @@
+@{
+    var size = ViewData["size"]?.ToString() ?? "32";
+    var showText = ViewData["showText"] as bool? ?? true;
+}
+<div class="d-inline-flex align-items-center gap-2">
+    <svg width="@size" height="@size" viewBox="0 0 16 16" style="image-rendering:pixelated">
+        <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+        <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+        <rect x="2" y="11" width="12" height="1" fill="#FFD23F"/>
+        <rect x="2" y="5" width="1" height="9" fill="#1A1A2E"/>
+        <rect x="13" y="5" width="1" height="9" fill="#1A1A2E"/>
+        <rect x="2" y="13" width="12" height="1" fill="#1A1A2E"/>
+        <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+        <rect x="1" y="3" width="2" height="2" fill="#FFD23F"/>
+        <rect x="13" y="3" width="2" height="2" fill="#FFD23F"/>
+        <rect x="7" y="1" width="2" height="2" fill="#FF6B6B"/>
+    </svg>
+    @if (showText)
+    {
+        <span class="px-font fw-bold" style="font-size:1.1rem">GAMEVAULT</span>
+    }
+</div>

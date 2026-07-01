@@ -1,80 +1,148 @@
 @model AssetDetailsViewModel
+@using System.Globalization
 @{
     ViewData["Title"] = Model.Asset.Title;
     var asset = Model.Asset;
 }
 
+@functions {
+    static string ConditionBadgeCls(Condition c) => c switch
+    {
+        Condition.Mint => "px-badge-mint",
+        Condition.Good => "px-badge-good",
+        Condition.Fair => "px-badge-fair",
+        Condition.Poor => "px-badge-poor",
+        _              => "px-badge-yellow"
+    };
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="px-btn px-btn-secondary px-btn-sm">&#8592; CATÁLOGO</a>
+</div>
+
 <h1>@asset.Title</h1>
 
-<div class="row mt-4">
+<div class="row mt-4 g-4">
     <div class="col-md-5">
         @if (!string.IsNullOrEmpty(asset.ImageUrl))
         {
-            <img src="@asset.ImageUrl" class="img-fluid rounded shadow-sm w-100"
-                 style="max-height:400px; object-fit:contain" alt="@asset.Title" />
+            <div class="px-card overflow-hidden">
+                <img src="@asset.ImageUrl" class="w-100"
+                     style="max-height:420px; object-fit:contain; display:block"
+                     alt="@asset.Title" />
+            </div>
         }
         else
         {
-            <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm"
-                 style="height:300px">
-                <span class="text-muted">Sin imagen</span>
+            <div class="px-card d-flex align-items-center justify-content-center"
+                 style="height:300px; background:var(--gv-yellow-soft)">
+                <div class="text-center">
+                    <svg width="64" height="64" viewBox="0 0 16 16" style="image-rendering:pixelated; opacity:0.5">
+                        <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                        <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                        <rect x="2" y="11" width="12" height="1" fill="#FFD23F"/>
+                        <rect x="2" y="5" width="1" height="9" fill="#1A1A2E"/>
+                        <rect x="13" y="5" width="1" height="9" fill="#1A1A2E"/>
+                        <rect x="2" y="13" width="12" height="1" fill="#1A1A2E"/>
+                        <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                        <rect x="1" y="3" width="2" height="2" fill="#FFD23F"/>
+                        <rect x="13" y="3" width="2" height="2" fill="#FFD23F"/>
+                        <rect x="7" y="1" width="2" height="2" fill="#FF6B6B"/>
+                    </svg>
+                    <p class="mt-2 mb-0 px-font" style="font-size:0.8rem; color:var(--gv-muted)">Sin imagen</p>
+                </div>
             </div>
         }
     </div>
 
     <div class="col-md-7">
-        <div class="card mb-3">
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-5">Plataforma</dt>
-                    <dd class="col-7">
-                        <span class="badge bg-secondary">@asset.Platform.GetDisplayName()</span>
-                    </dd>
-
-                    <dt class="col-5">Año de lanzamiento</dt>
-                    <dd class="col-7">@asset.Year</dd>
-
-                    <dt class="col-5">Región</dt>
-                    <dd class="col-7">@asset.Region.GetDisplayName()</dd>
-
-                    <dt class="col-5">Estado de conservación</dt>
-                    <dd class="col-7">@asset.Condition.GetDisplayName()</dd>
-
-                    <dt class="col-5">Valor estimado</dt>
-                    <dd class="col-7 fw-bold fs-5">
-                        $ @asset.EstimatedValue.ToString("N2", new CultureInfo("es-EC"))
-                    </dd>
-
-                    @if (!string.IsNullOrWhiteSpace(asset.Description))
-                    {
-                        <dt class="col-5">Descripción</dt>
-                        <dd class="col-7" style="white-space:pre-line">@asset.Description</dd>
-                    }
-                </dl>
+        <div class="px-card p-4 mb-3">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="px-badge px-badge-yellow">@asset.Platform.GetDisplayName()</span>
+                <span class="px-badge @ConditionBadgeCls(asset.Condition)">@asset.Condition.GetDisplayName()</span>
+                <span class="px-badge px-badge-cyan">@asset.Region.GetDisplayName()</span>
             </div>
+
+            <dl class="row mb-0 px-dl">
+                <dt class="col-5">Año de lanzamiento</dt>
+                <dd class="col-7">@asset.Year</dd>
+
+                <dt class="col-5">Valor estimado</dt>
+                <dd class="col-7">
+                    <span class="px-font fw-bold" style="font-size:1.4rem; color:var(--gv-purple)">
+                        $ @asset.EstimatedValue.ToString("N2", new CultureInfo("es-EC"))
+                    </span>
+                </dd>
+
+                @if (!string.IsNullOrWhiteSpace(asset.Description))
+                {
+                    <dt class="col-5">Descripción</dt>
+                    <dd class="col-7" style="white-space:pre-line">@asset.Description</dd>
+                }
+            </dl>
         </div>
 
-        <p class="text-muted small mb-1">
-            Publicado por <strong>@Model.OwnerDisplayName</strong>
+        <div class="px-card p-3 mb-4" style="background:var(--gv-yellow-soft)">
+            <p class="mb-1 px-font" style="font-size:0.75rem; color:var(--gv-muted); text-transform:uppercase; letter-spacing:1px">
+                Coleccionista
+            </p>
+            <p class="mb-1 fw-bold">
+                <a asp-controller="Users" asp-action="Profile" asp-route-id="@asset.OwnerId"
+                   class="text-decoration-none" style="color:var(--gv-purple); font-family:'Courier New',monospace">
+                    @(string.IsNullOrWhiteSpace(Model.OwnerDisplayName) ? "Coleccionista anónimo" : Model.OwnerDisplayName)
+                </a>
+            </p>
             @{
                 var location = new[] { Model.OwnerCity, Model.OwnerCountry }
                     .Where(s => !string.IsNullOrWhiteSpace(s));
                 if (location.Any())
                 {
-                    <span>desde @string.Join(", ", location)</span>
+                    <p class="mb-1 px-font" style="font-size:0.8rem; color:var(--gv-muted)">
+                        &#128205; @string.Join(", ", location)
+                    </p>
                 }
             }
-        </p>
-        <p class="text-muted small mb-4">
-            Registrado el @asset.CreatedAt.ToString("dd 'de' MMMM 'de' yyyy", new CultureInfo("es-EC"))
-        </p>
+            <p class="mb-0 px-font" style="font-size:0.75rem; color:var(--gv-muted)">
+                Registrado el @asset.CreatedAt.ToString("dd 'de' MMMM 'de' yyyy", new CultureInfo("es-EC"))
+            </p>
+        </div>
 
         <div class="d-flex flex-wrap gap-2">
-            <a asp-action="Index" class="btn btn-outline-secondary">Volver al catálogo</a>
+            <a asp-action="Index" class="px-btn px-btn-secondary">&#8592; CATÁLOGO</a>
             @if (Model.IsCurrentUserOwner)
             {
-                <a asp-action="Edit" asp-route-id="@asset.Id" class="btn btn-warning">Editar</a>
-                <a asp-action="Delete" asp-route-id="@asset.Id" class="btn btn-outline-danger">Eliminar</a>
+                <a asp-action="Edit" asp-route-id="@asset.Id" class="px-btn px-btn-primary">&#9998; EDITAR</a>
+                <a asp-action="Delete" asp-route-id="@asset.Id" class="px-btn px-btn-danger">&#128465; ELIMINAR</a>
+                @if (!Model.HasActiveTradeOffer)
+                {
+                    <a asp-controller="Marketplace" asp-action="Create" asp-route-assetId="@asset.Id"
+                       class="px-btn" style="background:var(--gv-cyan); color:var(--gv-ink)">
+                        &#128722; OFERTAR EN MARKETPLACE
+                    </a>
+                }
+                else
+                {
+                    <span class="px-btn" style="background:var(--gv-yellow-soft); color:var(--gv-muted); cursor:default; opacity:0.7">
+                        &#128722; YA OFERTADO
+                    </span>
+                }
+            }
+            @if (User.Identity?.IsAuthenticated == true && !Model.IsCurrentUserOwner)
+            {
+                if (Model.IsInWishlist)
+                {
+                    <span class="px-btn px-btn-secondary" style="cursor:default; opacity:0.7">
+                        &#9733; EN TU WISHLIST
+                    </span>
+                }
+                else
+                {
+                    <form method="post" asp-controller="Wishlist" asp-action="Add" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="assetId" value="@asset.Id" />
+                        <button type="submit" class="px-btn px-btn-primary">&#9733; GUARDAR EN WISHLIST</button>
+                    </form>
+                }
             }
         </div>
     </div>

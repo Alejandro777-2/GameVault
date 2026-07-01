@@ -1,0 +1,142 @@
+@model MarketplaceDetailsViewModel
+@using System.Globalization
+@using GameVault.Helpers
+@{
+    ViewData["Title"] = "Oferta — " + Model.Offer.Asset.Title;
+    var offer = Model.Offer;
+    var asset = offer.Asset;
+}
+
+@functions {
+    static string TypeBadgeCls(TradeType t) => t switch
+    {
+        TradeType.Sale  => "px-badge-cyan",
+        TradeType.Both  => "px-badge-purple",
+        _               => "px-badge-yellow"
+    };
+
+    static string ConditionBadgeCls(Condition c) => c switch
+    {
+        Condition.Mint => "px-badge-mint",
+        Condition.Good => "px-badge-good",
+        Condition.Fair => "px-badge-fair",
+        Condition.Poor => "px-badge-poor",
+        _              => "px-badge-yellow"
+    };
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="px-btn px-btn-secondary px-btn-sm">&#8592; MARKETPLACE</a>
+</div>
+
+<h1>@asset.Title</h1>
+
+<div class="row mt-4 g-4">
+    <div class="col-md-5">
+        @if (!string.IsNullOrEmpty(asset.ImageUrl))
+        {
+            <div class="px-card overflow-hidden">
+                <img src="@asset.ImageUrl" class="w-100"
+                     style="max-height:420px; object-fit:contain; display:block"
+                     alt="@asset.Title" />
+            </div>
+        }
+        else
+        {
+            <div class="px-card d-flex align-items-center justify-content-center"
+                 style="height:300px; background:var(--gv-yellow-soft)">
+                <div class="text-center">
+                    <svg width="64" height="64" viewBox="0 0 16 16" style="image-rendering:pixelated; opacity:0.5">
+                        <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                        <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                        <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                    </svg>
+                    <p class="mt-2 mb-0 px-font" style="font-size:0.8rem; color:var(--gv-muted)">Sin imagen</p>
+                </div>
+            </div>
+        }
+
+        <div class="px-card p-3 mt-3">
+            <p class="mb-1 px-font fw-bold" style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--gv-muted)">
+                Activo en catálogo
+            </p>
+            <a asp-controller="Assets" asp-action="Details" asp-route-id="@asset.Id"
+               class="px-btn px-btn-secondary px-btn-sm w-100 text-center mt-1">
+                VER EN CATÁLOGO &#8599;
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="px-card p-4 mb-3">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="px-badge @TypeBadgeCls(offer.Type)" style="font-size:0.8rem; padding:4px 12px">
+                    @offer.Type.GetDisplayName()
+                </span>
+                <span class="px-badge px-badge-yellow">@asset.Platform.GetDisplayName()</span>
+                <span class="px-badge @ConditionBadgeCls(asset.Condition)">@asset.Condition.GetDisplayName()</span>
+            </div>
+
+            <dl class="row mb-0 px-dl">
+                <dt class="col-5">Año de lanzamiento</dt>
+                <dd class="col-7">@asset.Year</dd>
+
+                @if (offer.Price.HasValue)
+                {
+                    <dt class="col-5">Precio</dt>
+                    <dd class="col-7">
+                        <span class="px-font fw-bold" style="font-size:1.4rem; color:var(--gv-purple)">
+                            $ @offer.Price.Value.ToString("N2", new CultureInfo("es-EC"))
+                        </span>
+                    </dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(offer.Description))
+                {
+                    <dt class="col-5">Descripción</dt>
+                    <dd class="col-7" style="white-space:pre-line">@offer.Description</dd>
+                }
+
+                <dt class="col-5">Publicada</dt>
+                <dd class="col-7">
+                    @offer.CreatedAt.ToString("dd 'de' MMMM 'de' yyyy", new CultureInfo("es-EC"))
+                </dd>
+            </dl>
+        </div>
+
+        <div class="px-card p-3 mb-4" style="background:var(--gv-yellow-soft)">
+            <p class="mb-1 px-font" style="font-size:0.75rem; color:var(--gv-muted); text-transform:uppercase; letter-spacing:1px">
+                Propietario
+            </p>
+            <p class="mb-1 fw-bold">
+                <a asp-controller="Users" asp-action="Profile" asp-route-id="@offer.OwnerId"
+                   class="text-decoration-none" style="color:var(--gv-purple); font-family:'Courier New',monospace">
+                    @(string.IsNullOrWhiteSpace(offer.Owner.DisplayName) ? "Coleccionista anónimo" : offer.Owner.DisplayName)
+                </a>
+            </p>
+            @{
+                var location = new[] { offer.Owner.City, offer.Owner.Country }
+                    .Where(s => !string.IsNullOrWhiteSpace(s));
+                if (location.Any())
+                {
+                    <p class="mb-1 px-font" style="font-size:0.8rem; color:var(--gv-muted)">
+                        &#128205; @string.Join(", ", location)
+                    </p>
+                }
+            }
+        </div>
+
+        @if (offer.Status == TradeStatus.Active && !string.IsNullOrWhiteSpace(Model.OwnerEmail))
+        {
+            var subject = Uri.EscapeDataString($"[GameVault] Oferta: {asset.Title}");
+            var body = Uri.EscapeDataString($"Hola, me interesa tu oferta de \"{asset.Title}\" en GameVault.\n\n");
+            <a href="mailto:@Model.OwnerEmail?subject=@subject&body=@body"
+               class="px-btn w-100 text-center mb-2"
+               style="background:var(--gv-cyan); color:var(--gv-ink)">
+                &#9993; CONTACTAR PROPIETARIO
+            </a>
+        }
+
+        <a asp-action="Index" class="px-btn px-btn-secondary">&#8592; MARKETPLACE</a>
+    </div>
+</div>

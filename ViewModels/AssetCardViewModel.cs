@@ -12,4 +12,5 @@ public class AssetCardViewModel
     public decimal EstimatedValue { get; set; }
     public string? ImageUrl { get; set; }
     public string OwnerDisplayName { get; set; } = string.Empty;
+    public string OwnerId { get; set; } = string.Empty;
 }

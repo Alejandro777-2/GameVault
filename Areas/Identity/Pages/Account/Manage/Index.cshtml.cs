@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using GameVault.Models;
+using GameVault.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,13 +18,19 @@ namespace GameVault.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IGeocodingService _geocodingService;
+        private readonly ILogger<IndexModel> _logger;
 
         public IndexModel(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IGeocodingService geocodingService,
+            ILogger<IndexModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _geocodingService = geocodingService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -59,6 +66,10 @@ namespace GameVault.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Número de teléfono")]
             public string PhoneNumber { get; set; }
+
+            [StringLength(100, ErrorMessage = "La ciudad no puede superar los 100 caracteres.")]
+            [Display(Name = "Mi ciudad")]
+            public string City { get; set; }
         }
 
         private async Task LoadAsync(ApplicationUser user)
@@ -70,7 +81,8 @@ namespace GameVault.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                City = user.City,
             };
         }
 
@@ -111,8 +123,47 @@ namespace GameVault.Areas.Identity.Pages.Account.Manage
                 }
             }
 
+            bool geocodingFailed = false;
+
+            _logger.LogInformation(
+                "Profile city comparison — stored: '{OldCity}', submitted: '{NewCity}'",
+                user.City, Input.City);
+
+            if (Input.City != user.City)
+            {
+                user.City = Input.City;
+
+                if (string.IsNullOrWhiteSpace(Input.City))
+                {
+                    user.Latitude = null;
+                    user.Longitude = null;
+                }
+                else
+                {
+                    var (lat, lng) = await _geocodingService.GeocodeCityAsync(Input.City);
+                    if (lat.HasValue && lng.HasValue)
+                    {
+                        user.Latitude = lat;
+                        user.Longitude = lng;
+                    }
+                    else
+                    {
+                        geocodingFailed = true;
+                    }
+                }
+
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    StatusMessage = "Ocurrió un error al intentar actualizar la ciudad.";
+                    return RedirectToPage();
+                }
+            }
+
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Su perfil ha sido actualizado correctamente.";
+            StatusMessage = geocodingFailed
+                ? "No pudimos ubicar automáticamente tu ciudad en el mapa, pero tu perfil se guardó correctamente."
+                : "Su perfil ha sido actualizado correctamente.";
             return RedirectToPage();
         }
     }

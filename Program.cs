@@ -18,6 +18,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddErrorDescriber<SpanishIdentityErrorDescriber>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IGeocodingService, GoogleGeocodingService>();
 builder.Services.AddControllersWithViews();
 
 var esEC = new CultureInfo("es-EC");
@@ -57,5 +59,11 @@ app.MapControllerRoute(
 
 app.MapRazorPages()
    .WithStaticAssets();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    await GameVault.Data.DbSeeder.SeedAsync(scope.ServiceProvider);
+}
 
 app.Run();

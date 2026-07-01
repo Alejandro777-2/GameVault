@@ -1,108 +1,155 @@
 @model AssetIndexViewModel
+@using System.Globalization
 @{
     ViewData["Title"] = "Catálogo de Activos";
 }
 
 @functions {
-    static string ConditionBadgeClass(Condition c) => c switch
+    static string ConditionBadgeCls(Condition c) => c switch
     {
-        Condition.Mint => "bg-success",
-        Condition.Good => "bg-primary",
-        Condition.Fair => "bg-warning text-dark",
-        Condition.Poor => "bg-danger",
-        _ => "bg-secondary"
+        Condition.Mint => "px-badge-mint",
+        Condition.Good => "px-badge-good",
+        Condition.Fair => "px-badge-fair",
+        Condition.Poor => "px-badge-poor",
+        _              => "px-badge-yellow"
     };
+
+    static string PlatformCardBg(Platform p)
+    {
+        string[] colors = { "#FFD23F", "#5B2C9E20", "#FF6B6B30", "#06B6D430", "#C0DD97" };
+        return colors[(int)p % colors.Length];
+    }
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Catálogo de Activos</h1>
+    <h1 class="mb-0">CATÁLOGO DE ACTIVOS</h1>
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <a asp-action="Create" class="btn btn-primary">Registrar nuevo activo</a>
+        <a asp-action="Create" class="px-btn px-btn-primary px-btn-sm">+ NUEVO ACTIVO</a>
     }
 </div>
 
-<form method="get" asp-action="Index" class="row g-2 mb-4 align-items-end">
+<form method="get" asp-action="Index" class="px-card p-3 mb-4">
     <input type="hidden" name="page" value="1" />
-    <div class="col-12 col-md-4">
-        <input type="text" name="searchTerm" value="@Model.SearchTerm"
-               class="form-control" placeholder="Buscar por título..." />
-    </div>
-    <div class="col-6 col-md-3">
-        <select name="platform" class="form-select">
-            <option value="">Todas las plataformas</option>
-            @foreach (var item in Html.GetEnumSelectList<Platform>())
-            {
-                var sel = Model.PlatformFilter.HasValue
-                    && (int)Model.PlatformFilter.Value == int.Parse(item.Value!);
-                <option value="@item.Value" selected="@(sel ? "selected" : null)">@item.Text</option>
-            }
-        </select>
-    </div>
-    <div class="col-6 col-md-2">
-        <select name="condition" class="form-select">
-            <option value="">Todos los estados</option>
-            @foreach (var item in Html.GetEnumSelectList<Condition>())
-            {
-                var sel = Model.ConditionFilter.HasValue
-                    && (int)Model.ConditionFilter.Value == int.Parse(item.Value!);
-                <option value="@item.Value" selected="@(sel ? "selected" : null)">@item.Text</option>
-            }
-        </select>
-    </div>
-    <div class="col-6 col-md-2">
-        <button type="submit" class="btn btn-outline-secondary w-100">Buscar</button>
-    </div>
-    <div class="col-6 col-md-1">
-        <a asp-action="Index" class="btn btn-outline-danger w-100" title="Limpiar filtros">✕</a>
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+            <label class="form-label">Buscar</label>
+            <input type="text" name="searchTerm" value="@Model.SearchTerm"
+                   class="form-control" placeholder="Título del activo..." />
+        </div>
+        <div class="col-6 col-md-3">
+            <label class="form-label">Plataforma</label>
+            <select name="platform" class="form-select">
+                <option value="">Todas</option>
+                @foreach (var item in Html.GetEnumSelectList<Platform>())
+                {
+                    var sel = Model.PlatformFilter.HasValue
+                              && (int)Model.PlatformFilter.Value == int.Parse(item.Value!);
+                    <option value="@item.Value" selected="@(sel ? "selected" : null)">@item.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">Estado</label>
+            <select name="condition" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var item in Html.GetEnumSelectList<Condition>())
+                {
+                    var sel = Model.ConditionFilter.HasValue
+                              && (int)Model.ConditionFilter.Value == int.Parse(item.Value!);
+                    <option value="@item.Value" selected="@(sel ? "selected" : null)">@item.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <button type="submit" class="px-btn px-btn-primary w-100">BUSCAR</button>
+        </div>
+        <div class="col-6 col-md-1">
+            <a asp-action="Index" class="px-btn px-btn-secondary w-100 text-center" title="Limpiar filtros">&#10005;</a>
+        </div>
     </div>
 </form>
 
 @if (!Model.Assets.Any())
 {
-    <div class="text-center py-5 text-muted">
-        <div style="font-size:3rem">🎮</div>
-        <p class="mt-3 mb-0">No se encontraron activos con los filtros seleccionados.</p>
-        @if (Model.SearchTerm != null || Model.PlatformFilter != null || Model.ConditionFilter != null)
-        {
-            <a asp-action="Index" class="btn btn-link mt-2">Limpiar filtros</a>
-        }
+    <div class="text-center py-5">
+        <div class="px-card d-inline-block p-5">
+            <svg width="48" height="48" viewBox="0 0 16 16" style="image-rendering:pixelated">
+                <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                <rect x="2" y="11" width="12" height="1" fill="#FFD23F"/>
+                <rect x="2" y="5" width="1" height="9" fill="#1A1A2E"/>
+                <rect x="13" y="5" width="1" height="9" fill="#1A1A2E"/>
+                <rect x="2" y="13" width="12" height="1" fill="#1A1A2E"/>
+                <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                <rect x="1" y="3" width="2" height="2" fill="#FFD23F"/>
+                <rect x="13" y="3" width="2" height="2" fill="#FFD23F"/>
+                <rect x="7" y="1" width="2" height="2" fill="#FF6B6B"/>
+            </svg>
+            <p class="mt-3 mb-2 px-font fw-bold">No se encontraron activos</p>
+            <p class="mb-0" style="color:var(--gv-muted); font-size:0.85rem">
+                Prueba con otros filtros
+            </p>
+            @if (Model.SearchTerm != null || Model.PlatformFilter != null || Model.ConditionFilter != null)
+            {
+                <div class="mt-3">
+                    <a asp-action="Index" class="px-btn px-btn-secondary px-btn-sm">LIMPIAR FILTROS</a>
+                </div>
+            }
+        </div>
     </div>
 }
 else
 {
-    <p class="text-muted small mb-3">@Model.TotalItems activo(s) encontrado(s)</p>
+    <p class="px-font mb-3" style="font-size:0.8rem; color:var(--gv-muted)">
+        @Model.TotalItems activo(s) encontrado(s)
+    </p>
 
     <div class="row g-4">
         @foreach (var asset in Model.Assets)
         {
             <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm position-relative">
+                <div class="px-card h-100 position-relative d-flex flex-column" style="overflow:hidden">
                     @if (!string.IsNullOrEmpty(asset.ImageUrl))
                     {
-                        <img src="@asset.ImageUrl" class="card-img-top"
-                             style="height:200px; object-fit:cover" alt="@asset.Title" />
+                        <div class="gv-card-thumb">
+                            <img src="@asset.ImageUrl" alt="@asset.Title" />
+                        </div>
                     }
                     else
                     {
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
-                             style="height:200px">
-                            <span class="text-muted small">Sin imagen</span>
+                        <div class="gv-card-thumb" style="background:@PlatformCardBg(asset.Platform)">
+                            <svg width="32" height="32" viewBox="0 0 16 16" style="image-rendering:pixelated; opacity:0.6">
+                                <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                                <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                                <rect x="2" y="11" width="12" height="1" fill="#FFD23F"/>
+                                <rect x="2" y="5" width="1" height="9" fill="#1A1A2E"/>
+                                <rect x="13" y="5" width="1" height="9" fill="#1A1A2E"/>
+                                <rect x="2" y="13" width="12" height="1" fill="#1A1A2E"/>
+                                <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                                <rect x="1" y="3" width="2" height="2" fill="#FFD23F"/>
+                                <rect x="13" y="3" width="2" height="2" fill="#FFD23F"/>
+                                <rect x="7" y="1" width="2" height="2" fill="#FF6B6B"/>
+                            </svg>
                         </div>
                     }
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate" title="@asset.Title">@asset.Title</h5>
-                        <div class="mb-2">
-                            <span class="badge bg-secondary">@asset.Platform.GetDisplayName()</span>
-                            <span class="badge @ConditionBadgeClass(asset.Condition)">@asset.Condition.GetDisplayName()</span>
+                    <div class="p-3 flex-grow-1">
+                        <h6 class="px-font fw-bold text-truncate mb-2" title="@asset.Title">@asset.Title</h6>
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <span class="px-badge px-badge-yellow">@asset.Platform.GetDisplayName()</span>
+                            <span class="px-badge @ConditionBadgeCls(asset.Condition)">@asset.Condition.GetDisplayName()</span>
                         </div>
-                        <p class="card-text small text-muted mb-1">Año: @asset.Year</p>
-                        <p class="card-text fw-bold">
+                        <p class="px-font fw-bold mb-0 mt-auto" style="color:var(--gv-purple); font-size:1.1rem">
                             $ @asset.EstimatedValue.ToString("N0", new CultureInfo("es-EC"))
                         </p>
                     </div>
-                    <div class="card-footer bg-transparent small text-muted">
-                        Publicado por @asset.OwnerDisplayName
+                    <div class="px-3 pb-2 pt-1" style="border-top:1px solid var(--gv-line)">
+                        <small class="px-font" style="font-size:0.7rem; color:var(--gv-muted)">
+                            Publicado por
+                            <a asp-controller="Users" asp-action="Profile" asp-route-id="@asset.OwnerId"
+                               class="position-relative z-1 text-decoration-none fw-bold"
+                               style="color:var(--gv-purple)">@(string.IsNullOrWhiteSpace(asset.OwnerDisplayName) ? "Anónimo" : asset.OwnerDisplayName)</a>
+                        </small>
                     </div>
                     <a class="stretched-link" asp-action="Details" asp-route-id="@asset.Id"
                        aria-label="Ver @asset.Title"></a>
@@ -113,36 +160,36 @@ else
 
     @if (Model.TotalPages > 1)
     {
-        <nav aria-label="Paginación de activos" class="mt-4">
-            <ul class="pagination justify-content-center flex-wrap">
-                <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
-                    <a class="page-link"
+        <nav aria-label="Paginación de activos" class="mt-5">
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                @if (Model.CurrentPage > 1)
+                {
+                    <a class="px-btn px-btn-secondary px-btn-sm"
                        asp-action="Index"
                        asp-route-page="@(Model.CurrentPage - 1)"
                        asp-route-searchTerm="@Model.SearchTerm"
                        asp-route-platform="@Model.PlatformFilter"
-                       asp-route-condition="@Model.ConditionFilter">Anterior</a>
-                </li>
+                       asp-route-condition="@Model.ConditionFilter">&#8592; ANTERIOR</a>
+                }
                 @for (int i = 1; i <= Model.TotalPages; i++)
                 {
-                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-page="@i"
-                           asp-route-searchTerm="@Model.SearchTerm"
-                           asp-route-platform="@Model.PlatformFilter"
-                           asp-route-condition="@Model.ConditionFilter">@i</a>
-                    </li>
+                    <a class="px-btn px-btn-sm @(i == Model.CurrentPage ? "px-btn-primary" : "px-btn-secondary")"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-platform="@Model.PlatformFilter"
+                       asp-route-condition="@Model.ConditionFilter">@i</a>
                 }
-                <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
-                    <a class="page-link"
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a class="px-btn px-btn-secondary px-btn-sm"
                        asp-action="Index"
                        asp-route-page="@(Model.CurrentPage + 1)"
                        asp-route-searchTerm="@Model.SearchTerm"
                        asp-route-platform="@Model.PlatformFilter"
-                       asp-route-condition="@Model.ConditionFilter">Siguiente</a>
-                </li>
-            </ul>
+                       asp-route-condition="@Model.ConditionFilter">SIGUIENTE &#8594;</a>
+                }
+            </div>
         </nav>
     }
 }

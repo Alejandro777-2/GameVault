@@ -67,6 +67,7 @@ public class AssetsController : Controller
                 EstimatedValue = a.EstimatedValue,
                 ImageUrl = a.ImageUrl,
                 OwnerDisplayName = a.Owner.DisplayName,
+                OwnerId = a.OwnerId,
             }).ToList(),
             CurrentPage = page,
             TotalPages = totalPages,
@@ -89,14 +90,23 @@ public class AssetsController : Controller
 
         if (asset == null) return NotFound();
 
+        var currentUserId = _userManager.GetUserId(User);
+        bool isInWishlist = currentUserId != null
+            && await _context.WishlistItems
+                .AnyAsync(w => w.UserId == currentUserId && w.AssetId == id);
+
+        bool hasActiveTradeOffer = await _context.TradeOffers
+            .AnyAsync(t => t.AssetId == id && t.Status == TradeStatus.Active);
+
         return View(new AssetDetailsViewModel
         {
             Asset = asset,
             OwnerDisplayName = asset.Owner.DisplayName,
             OwnerCity = asset.Owner.City,
             OwnerCountry = asset.Owner.Country,
-            IsCurrentUserOwner = User.Identity?.IsAuthenticated == true
-                && _userManager.GetUserId(User) == asset.OwnerId,
+            IsCurrentUserOwner = currentUserId == asset.OwnerId,
+            IsInWishlist = isInWishlist,
+            HasActiveTradeOffer = hasActiveTradeOffer,
         });
     }
 

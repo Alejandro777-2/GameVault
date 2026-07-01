@@ -1,14 +1,34 @@
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+using GameVault.Data;
 using GameVault.Models;
+using GameVault.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameVault.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
+    private readonly ApplicationDbContext _context;
+
+    public HomeController(ApplicationDbContext context)
     {
-        return View();
+        _context = context;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var vm = new HomeIndexViewModel
+        {
+            TotalAssets = await _context.Assets.CountAsync(a => a.IsActive),
+            TotalCollectors = await _context.Users.CountAsync(),
+            TotalPlatforms = await _context.Assets
+                .Where(a => a.IsActive)
+                .Select(a => a.Platform)
+                .Distinct()
+                .CountAsync()
+        };
+        return View(vm);
     }
 
     public IActionResult Privacy()

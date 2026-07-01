@@ -1,0 +1,136 @@
+@model TradeOfferFormViewModel
+@using GameVault.Helpers
+@{
+    ViewData["Title"] = "Nueva oferta en Marketplace";
+}
+
+<div class="mb-3">
+    <a asp-controller="Assets" asp-action="Details" asp-route-id="@Model.AssetId"
+       class="px-btn px-btn-secondary px-btn-sm">&#8592; VOLVER AL ACTIVO</a>
+</div>
+
+<h1>NUEVA OFERTA</h1>
+
+<div class="row mt-4 g-4">
+    <div class="col-12 col-md-4">
+        <div class="px-card-accent p-3">
+            <p class="px-font mb-2" style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--gv-muted)">
+                Activo seleccionado
+            </p>
+            @if (!string.IsNullOrEmpty(Model.AssetImageUrl))
+            {
+                <img src="@Model.AssetImageUrl" class="w-100 mb-3"
+                     style="max-height:200px; object-fit:contain; border:2px solid var(--gv-ink)"
+                     alt="@Model.AssetTitle" />
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-center mb-3"
+                     style="height:140px; background:var(--gv-yellow-soft); border:2px solid var(--gv-ink)">
+                    <svg width="48" height="48" viewBox="0 0 16 16" style="image-rendering:pixelated; opacity:0.5">
+                        <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                        <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                        <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                    </svg>
+                </div>
+            }
+            <p class="px-font fw-bold mb-1">@Model.AssetTitle</p>
+            <div class="d-flex flex-wrap gap-1">
+                <span class="px-badge px-badge-yellow">@Model.AssetPlatform.GetDisplayName()</span>
+                <span class="px-badge px-badge-cyan">@Model.AssetYear</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-8">
+        <div class="px-card-accent p-4">
+            <span class="px-badge px-badge-yellow mb-3 d-inline-block">&#128722; MARKETPLACE</span>
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="AssetId" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger px-alert mb-4" role="alert"></div>
+
+                <div class="mb-4">
+                    <label class="form-label">Tipo de oferta</label>
+                    <div class="d-flex flex-wrap gap-3 mt-1">
+                        @{
+                            var tradeTypes = new[]
+                            {
+                                (TradeType.Sale,  "px-badge-cyan",   "&#128176; VENTA"),
+                                (TradeType.Trade, "px-badge-yellow", "&#128259; INTERCAMBIO"),
+                                (TradeType.Both,  "px-badge-purple", "&#10022; VENTA E INTERCAMBIO"),
+                            };
+                        }
+                        @foreach (var (val, cls, label) in tradeTypes)
+                        {
+                            var inputId = $"type_{(int)val}";
+                            var isChecked = Model.Type == val;
+                            <label for="@inputId"
+                                   class="px-card p-3 d-flex align-items-center gap-2"
+                                   style="cursor:pointer; min-width:160px; @(isChecked ? "box-shadow:4px 4px 0 var(--gv-purple)" : "")">
+                                <input type="radio" id="@inputId" name="Type" value="@((int)val)"
+                                       class="form-check-input mt-0"
+                                       @(isChecked ? "checked" : "")
+                                       onchange="togglePriceField(this)" />
+                                <span class="px-badge @cls" style="pointer-events:none">@Html.Raw(label)</span>
+                            </label>
+                        }
+                    </div>
+                    <span asp-validation-for="Type" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3" id="price-group"
+                     style="@(Model.Type == TradeType.Trade ? "display:none" : "")">
+                    <label asp-for="Price" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text px-font fw-bold"
+                              style="border:2px solid var(--gv-ink); border-right:0; border-radius:0; background:var(--gv-yellow); color:var(--gv-ink)">
+                            $
+                        </span>
+                        <input asp-for="Price" class="form-control" type="number"
+                               step="0.01" min="0" max="99999" placeholder="0.00" />
+                    </div>
+                    <span asp-validation-for="Price" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" style="height:120px"
+                              placeholder="Describe qué buscas a cambio, estado esperado del artículo, condiciones, etc."></textarea>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                        <small class="px-font" style="color:var(--gv-muted); font-size:0.7rem">Máx. 1000 caracteres</small>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="px-btn px-btn-primary">&#128190; PUBLICAR OFERTA</button>
+                    <a asp-controller="Assets" asp-action="Details" asp-route-id="@Model.AssetId"
+                       class="px-btn px-btn-secondary">CANCELAR</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePriceField(radio) {
+            var tradeValue = @((int)TradeType.Trade);
+            var priceGroup = document.getElementById('price-group');
+            priceGroup.style.display = (parseInt(radio.value) === tradeValue) ? 'none' : '';
+        }
+
+        // Highlight selected radio card
+        document.querySelectorAll('input[name="Type"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('input[name="Type"]').forEach(function (r) {
+                    r.closest('label').style.boxShadow = '';
+                });
+                this.closest('label').style.boxShadow = '4px 4px 0 var(--gv-purple)';
+            });
+        });
+    </script>
+}

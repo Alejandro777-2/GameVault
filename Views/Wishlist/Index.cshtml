@@ -1,0 +1,125 @@
+@model List<GameVault.Models.WishlistItem>
+@using System.Globalization
+@{
+    ViewData["Title"] = "Mi Wishlist";
+}
+
+@functions {
+    static string ConditionBadgeCls(GameVault.Models.Condition c) => c switch
+    {
+        GameVault.Models.Condition.Mint => "px-badge-mint",
+        GameVault.Models.Condition.Good => "px-badge-good",
+        GameVault.Models.Condition.Fair => "px-badge-fair",
+        GameVault.Models.Condition.Poor => "px-badge-poor",
+        _                               => "px-badge-yellow"
+    };
+
+    static string PlatformCardBg(GameVault.Models.Platform p)
+    {
+        string[] colors = { "#FFD23F", "#5B2C9E20", "#FF6B6B30", "#06B6D430", "#C0DD97" };
+        return colors[(int)p % colors.Length];
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h1 class="mb-0">MI WISHLIST</h1>
+    <a asp-controller="Assets" asp-action="Index" class="px-btn px-btn-secondary px-btn-sm">
+        EXPLORAR CATÁLOGO
+    </a>
+</div>
+<p class="px-font mb-4" style="font-size:0.85rem; color:var(--gv-muted)">
+    @Model.Count activo(s) guardado(s)
+</p>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <div class="px-card-accent p-5 d-inline-block" style="max-width:480px">
+            <svg width="48" height="48" viewBox="0 0 16 16" style="image-rendering:pixelated; opacity:0.5">
+                <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                <rect x="2" y="11" width="12" height="1" fill="#FFD23F"/>
+                <rect x="2" y="5" width="1" height="9" fill="#1A1A2E"/>
+                <rect x="13" y="5" width="1" height="9" fill="#1A1A2E"/>
+                <rect x="2" y="13" width="12" height="1" fill="#1A1A2E"/>
+                <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                <rect x="1" y="3" width="2" height="2" fill="#FFD23F"/>
+                <rect x="13" y="3" width="2" height="2" fill="#FFD23F"/>
+                <rect x="7" y="1" width="2" height="2" fill="#FF6B6B"/>
+            </svg>
+            <p class="mt-3 mb-2 px-font fw-bold">Tu wishlist está vacía</p>
+            <p class="mb-4" style="color:var(--gv-muted); font-size:0.9rem">
+                Explora el catálogo y guarda los activos que te interesen.
+            </p>
+            <a asp-controller="Assets" asp-action="Index" class="px-btn px-btn-primary">
+                EXPLORAR CATÁLOGO
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            var asset = item.Asset;
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="px-card h-100 position-relative d-flex flex-column" style="overflow:hidden">
+                    @if (!string.IsNullOrEmpty(asset.ImageUrl))
+                    {
+                        <div class="gv-card-thumb">
+                            <img src="@asset.ImageUrl" alt="@asset.Title" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="gv-card-thumb" style="background:@PlatformCardBg(asset.Platform)">
+                            <svg width="32" height="32" viewBox="0 0 16 16" style="image-rendering:pixelated; opacity:0.6">
+                                <rect x="2" y="5" width="12" height="9" fill="#8B4513"/>
+                                <rect x="2" y="5" width="12" height="2" fill="#FFD23F"/>
+                                <rect x="2" y="11" width="12" height="1" fill="#FFD23F"/>
+                                <rect x="2" y="5" width="1" height="9" fill="#1A1A2E"/>
+                                <rect x="13" y="5" width="1" height="9" fill="#1A1A2E"/>
+                                <rect x="2" y="13" width="12" height="1" fill="#1A1A2E"/>
+                                <rect x="7" y="8" width="2" height="2" fill="#FFD23F"/>
+                                <rect x="1" y="3" width="2" height="2" fill="#FFD23F"/>
+                                <rect x="13" y="3" width="2" height="2" fill="#FFD23F"/>
+                                <rect x="7" y="1" width="2" height="2" fill="#FF6B6B"/>
+                            </svg>
+                        </div>
+                    }
+
+                    <div class="position-absolute" style="top:6px; right:6px; z-index:2">
+                        <form method="post" asp-controller="Wishlist" asp-action="Remove"
+                              asp-route-id="@item.Id" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="px-btn px-btn-danger px-btn-sm"
+                                    style="padding:2px 7px; font-size:0.65rem; box-shadow:2px 2px 0 var(--gv-ink)"
+                                    title="Quitar de wishlist">&#10005; QUITAR</button>
+                        </form>
+                    </div>
+
+                    <div class="p-3 flex-grow-1">
+                        <h6 class="px-font fw-bold text-truncate mb-2" title="@asset.Title">@asset.Title</h6>
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <span class="px-badge px-badge-yellow">@asset.Platform.GetDisplayName()</span>
+                            <span class="px-badge @ConditionBadgeCls(asset.Condition)">@asset.Condition.GetDisplayName()</span>
+                        </div>
+                        <p class="px-font fw-bold mb-0" style="color:var(--gv-purple); font-size:1.1rem">
+                            $ @asset.EstimatedValue.ToString("N0", new CultureInfo("es-EC"))
+                        </p>
+                    </div>
+
+                    <div class="px-3 pb-2 pt-1" style="border-top:1px solid var(--gv-line)">
+                        <small class="px-font" style="font-size:0.7rem; color:var(--gv-muted)">
+                            Guardado el @item.AddedAt.ToString("dd/MM/yyyy")
+                        </small>
+                    </div>
+
+                    <a class="stretched-link" asp-controller="Assets" asp-action="Details"
+                       asp-route-id="@asset.Id" aria-label="Ver @asset.Title"></a>
+                </div>
+            </div>
+        }
+    </div>
+}

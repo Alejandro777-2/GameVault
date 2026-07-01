@@ -27,8 +27,15 @@ public class ApplicationUser : IdentityUser
     [Display(Name = "Fecha de registro")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    [Display(Name = "Latitud")]
+    public double? Latitude { get; set; }
+
+    [Display(Name = "Longitud")]
+    public double? Longitude { get; set; }
+
     public ICollection<Asset> Assets { get; set; } = [];
     public ICollection<TradeOffer> TradeOffers { get; set; } = [];
     public ICollection<Review> ReviewsGiven { get; set; } = [];
     public ICollection<Review> ReviewsReceived { get; set; } = [];
+    public ICollection<WishlistItem> WishlistItems { get; set; } = [];
 }

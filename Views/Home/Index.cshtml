@@ -1,22 +1,57 @@
+@model HomeIndexViewModel
 @{
     ViewData["Title"] = "Inicio";
 }
 
 <div class="container py-5">
-    <div class="row justify-content-center text-center">
+    <div class="row justify-content-center mb-5">
         <div class="col-lg-8">
-            <h1 class="display-4 fw-bold mb-3">Bienvenido a GameVault</h1>
-            <p class="lead text-muted mb-4">
-                La plataforma para coleccionistas de videojuegos retro en Latinoamérica
-            </p>
-            <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg px-4">
-                    Explorar catálogo
-                </a>
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-secondary btn-lg px-4">
-                    Crear cuenta
-                </a>
+            <div class="px-card-accent p-5 text-center"
+                 style="background-image: radial-gradient(circle, var(--gv-line) 1px, transparent 1px); background-size: 14px 14px;">
+                <span class="px-badge px-badge-yellow mb-3">&#9733; PARA COLECCIONISTAS &#9733;</span>
+                <h1 class="display-5 mb-0 mt-3">
+                    BIENVENIDO A<br>
+                    <span style="color:var(--gv-purple)">GAMEVAULT</span>
+                </h1>
+                <p class="mt-3 mb-4" style="color:var(--gv-muted); font-size:1.05rem">
+                    La plataforma para coleccionistas de videojuegos retro en Latinoamérica
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a asp-controller="Assets" asp-action="Index" class="px-btn px-btn-primary">
+                        EXPLORAR CATÁLOGO
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="px-btn px-btn-secondary">
+                        CREAR CUENTA
+                    </a>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="row g-4 justify-content-center mb-5">
+        <div class="col-md-4">
+            <div class="px-stat-card">
+                <div class="px-stat-label">Activos catalogados</div>
+                <div class="px-stat-value">@Model.TotalAssets</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="px-stat-card">
+                <div class="px-stat-label">Coleccionistas</div>
+                <div class="px-stat-value">@Model.TotalCollectors</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="px-stat-card">
+                <div class="px-stat-label">Plataformas representadas</div>
+                <div class="px-stat-value">@Model.TotalPlatforms</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a asp-controller="Assets" asp-action="Index" class="px-btn px-btn-primary">
+            VER EL CATÁLOGO COMPLETO
+        </a>
     </div>
 </div>

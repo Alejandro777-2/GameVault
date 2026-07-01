@@ -9,4 +9,6 @@ public class AssetDetailsViewModel
     public string? OwnerCity { get; set; }
     public string? OwnerCountry { get; set; }
     public bool IsCurrentUserOwner { get; set; }
+    public bool IsInWishlist { get; set; }
+    public bool HasActiveTradeOffer { get; set; }
 }

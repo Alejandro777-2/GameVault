@@ -42,48 +42,66 @@ There are no automated tests in this project yet.
 ## Stack
 
 - ASP.NET Core MVC 10
-- ASP.NET Core Identity — UI served from the package (not scaffolded into the project)
+- ASP.NET Core Identity — partially scaffolded (Login, Register, Logout, ForgotPassword, AccessDenied, Manage/Index are in `Areas/Identity/`)
 - Entity Framework Core 10 with SQLite (`app.db` at project root)
 - Default culture: `es-EC` — currency symbol `$` (Ecuador uses USD)
 - Bootstrap + jQuery Validation (via `wwwroot/lib/`)
 
 ## Architecture
 
-The app follows standard ASP.NET Core MVC. `Program.cs` wires up EF Core, Identity, localization (`es-EC` only), and static files. No API layer exists — everything is server-rendered Razor views.
+The app follows standard ASP.NET Core MVC. `Program.cs` wires up EF Core, Identity (with `SpanishIdentityErrorDescriber`), localization (`es-EC` only), and static files. No API layer — everything is server-rendered Razor views. In development, `DbSeeder.SeedAsync` runs on startup to populate demo users, assets, and wishlist items.
+
+### Controllers
+
+- **`AssetsController`** — full CRUD for retro game assets. `Index` supports search, platform/condition filtering, and pagination (12 per page). Create/Edit handle optional image upload (`wwwroot/uploads/assets/`, JPG/PNG/WEBP, max 5 MB). Delete is a soft-delete (`IsActive = false`). Authorization: `[AllowAnonymous]` on Index/Details, `[Authorize]` on write actions; ownership checked with `asset.OwnerId != currentUserId` before edit/delete.
+- **`WishlistController`** — `[Authorize]` on all actions. Add prevents saving own assets or duplicates. Remove verifies the item belongs to the current user.
+- **`CollectorsController`** — `[AllowAnonymous]`. Fetches users who have active assets, groups their top 3 platforms, orders by asset count.
+- **`UsersController`** — `[AllowAnonymous]`. Public profile page showing user info and their 12 most-recent active assets.
 
 ### Domain model relationships
 
 ```
 ApplicationUser (IdentityUser)
   ├── Assets[]          (one-to-many, OwnerId FK)
+  ├── WishlistItems[]   (one-to-many, UserId FK)
   ├── TradeOffers[]     (one-to-many, OwnerId FK)  ← user who posted the offer
   ├── ReviewsGiven[]    (one-to-many, FromUserId FK)
   └── ReviewsReceived[] (one-to-many, ToUserId FK)
 
 Asset
-  └── TradeOffers[]     (one-to-many, AssetId FK)
+  ├── TradeOffers[]     (one-to-many, AssetId FK)
+  └── WishlistItems[]   (one-to-many, AssetId FK)
 ```
 
-All FKs are configured with `DeleteBehavior.Restrict` in `ApplicationDbContext.OnModelCreating` because SQLite does not support multiple cascade paths.
+All FKs use `DeleteBehavior.Restrict` in `ApplicationDbContext.OnModelCreating` — SQLite does not support multiple cascade paths.
 
-**`TradeOffer.OwnerId`** is the user who *posted* the trade offer (typically the asset owner wanting to sell or trade). This is distinct from the user who responds to the offer.
+**`TradeOffer.OwnerId`** is the user who *posted* the offer (the asset owner), not the user who responds.
 
-### Current implementation state
+### ViewModels
 
-Only `HomeController` exists (Index, Privacy, Error). No CRUD controllers for Asset, TradeOffer, or Review have been implemented yet.
+`AssetFormViewModel` is shared for Create and Edit. On Edit, `Id` is non-null and `CurrentImageUrl` holds the existing image path so the view can show it while `ImageFile` remains optional.
+
+### View components
+
+`WishlistCountViewComponent` (`Components/WishlistCountViewComponent.cs`) renders the wishlist badge count in the navbar. Its view is at `Views/Shared/Components/WishlistCount/Default.cshtml`. It returns empty content for anonymous users.
+
+### Helpers and services
+
+- `Helpers/EnumExtensions.cs` — `GetDisplayName()` extension reads the `[Display(Name)]` attribute from enum members. Use this (not `.ToString()`) when rendering enums in views.
+- `Services/SpanishIdentityErrorDescriber.cs` — overrides all Identity validation error messages in Spanish; registered in `Program.cs`.
 
 ### Identity
 
 - `ApplicationUser` extends `IdentityUser` with: `DisplayName`, `City`, `Country`, `AvatarUrl`, `ReputationScore`, `CreatedAt`.
-- Identity UI pages (register, login, account management) are served from the `Microsoft.AspNetCore.Identity.UI` package. The only Identity file in this repo is `Areas/Identity/Pages/_ViewStart.cshtml`, which pins those pages to the shared layout.
-- Email confirmation is **disabled in development** (`RequireConfirmedAccount = false`) — re-enable before production.
+- Scaffolded pages live in `Areas/Identity/Pages/Account/`: Login, Register, Logout, ForgotPassword, AccessDenied, and Manage/Index.
+- Email confirmation is **disabled** (`RequireConfirmedAccount = false`) — re-enable before production.
 
 ## Database conventions
 
 - All FK relationships use `DeleteBehavior.Restrict`.
-- Soft delete on `Asset` via `IsActive` (`bool`, default `true`) — do not hard-delete Asset rows; always filter `IsActive == true` in queries.
+- Soft delete on `Asset` via `IsActive` (`bool`, default `true`) — never hard-delete Asset rows; always filter `IsActive == true` in queries.
 - Migrations live in `Data/Migrations/`.
-- **Decimal fields must use `[Column(TypeName = "TEXT")]`** — SQLite has no native decimal type; `Asset.EstimatedValue` and `TradeOffer.Price` both follow this pattern. Any new monetary field must do the same.
+- **Decimal fields must use `[Column(TypeName = "TEXT")]`** — SQLite has no native decimal type; `Asset.EstimatedValue` and `TradeOffer.Price` follow this pattern. Any new monetary field must do the same.
 
 ## Model field constraints
 
@@ -92,6 +110,10 @@ Only `HomeController` exists (Index, Privacy, Error). No CRUD controllers for As
 
 ## Enums
 
-All enums in `Models/Enums.cs` carry `[Display(Name = "...")]` attributes in Spanish. When rendering enum values in views, use a helper or `Html.DisplayNameFor` so the Spanish label is shown instead of the member name.
+All enums in `Models/Enums.cs` carry `[Display(Name = "...")]` attributes in Spanish. Always call `.GetDisplayName()` (from `Helpers/EnumExtensions`) instead of `.ToString()` when rendering enum values in views.
 
 Enums: `Platform` (NES → Other), `Region` (NTSC_US/PAL/NTSC_JP), `Condition` (Mint/Good/Fair/Poor), `TradeType` (Sale/Trade/Both), `TradeStatus` (Active/Pending/Closed/Cancelled).
+
+## Not yet implemented
+
+`TradeOffer` and `Review` models exist but have no controllers or views.
