@@ -20,6 +20,7 @@
             (string.IsNullOrEmpty(a) || action.Equals(a, StringComparison.OrdinalIgnoreCase))
                 ? "gv-nav-link active"
                 : "gv-nav-link";
+
     }
     <header>
         <nav class="gv-navbar navbar navbar-expand-sm py-2">
@@ -59,10 +60,6 @@
                         <li class="nav-item">
                             <a class="@NavCls("Marketplace")"
                                asp-controller="Marketplace" asp-action="Index">MARKETPLACE</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="@NavCls("Map")"
-                               asp-controller="Map" asp-action="Index">MAPA</a>
                         </li>
                         <li class="nav-item">
                             <a class="@NavCls("Home", "Privacy")"

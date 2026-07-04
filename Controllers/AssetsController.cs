@@ -68,6 +68,8 @@ public class AssetsController : Controller
                 ImageUrl = a.ImageUrl,
                 OwnerDisplayName = a.Owner.DisplayName,
                 OwnerId = a.OwnerId,
+                OfferType = a.OfferType,
+                TradeWants = a.TradeWants,
             }).ToList(),
             CurrentPage = page,
             TotalPages = totalPages,
@@ -136,6 +138,8 @@ public class AssetsController : Controller
             Condition = vm.Condition,
             Description = vm.Description,
             EstimatedValue = vm.EstimatedValue,
+            OfferType = vm.OfferType,
+            TradeWants = vm.OfferType == TradeType.Sale ? null : vm.TradeWants,
             ImageUrl = imageUrl,
             OwnerId = _userManager.GetUserId(User)!,
             CreatedAt = DateTime.UtcNow,
@@ -167,6 +171,8 @@ public class AssetsController : Controller
             Condition = asset.Condition,
             Description = asset.Description,
             EstimatedValue = asset.EstimatedValue,
+            OfferType = asset.OfferType,
+            TradeWants = asset.TradeWants,
             CurrentImageUrl = asset.ImageUrl,
         });
     }
@@ -205,6 +211,8 @@ public class AssetsController : Controller
         asset.Condition = vm.Condition;
         asset.Description = vm.Description;
         asset.EstimatedValue = vm.EstimatedValue;
+        asset.OfferType = vm.OfferType;
+        asset.TradeWants = vm.OfferType == TradeType.Sale ? null : vm.TradeWants;
 
         await _context.SaveChangesAsync();
 

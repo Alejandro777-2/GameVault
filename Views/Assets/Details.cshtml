@@ -67,12 +67,38 @@
                 <dt class="col-5">Año de lanzamiento</dt>
                 <dd class="col-7">@asset.Year</dd>
 
-                <dt class="col-5">Valor estimado</dt>
+                @if (asset.OfferType == TradeType.Sale || asset.OfferType == TradeType.Both)
+                {
+                    <dt class="col-5">Valor estimado</dt>
+                    <dd class="col-7">
+                        <span class="px-font fw-bold" style="font-size:1.4rem; color:var(--gv-purple)">
+                            $ @asset.EstimatedValue.ToString("N2", new CultureInfo("es-EC"))
+                        </span>
+                    </dd>
+                }
+
+                <dt class="col-5">Tipo de oferta</dt>
                 <dd class="col-7">
-                    <span class="px-font fw-bold" style="font-size:1.4rem; color:var(--gv-purple)">
-                        $ @asset.EstimatedValue.ToString("N2", new CultureInfo("es-EC"))
-                    </span>
+                    @if (asset.OfferType == TradeType.Trade)
+                    {
+                        <span class="px-badge px-badge-purple">&#x1F504; INTERCAMBIO</span>
+                    }
+                    else if (asset.OfferType == TradeType.Both)
+                    {
+                        <span class="px-badge px-badge-yellow">VENTA</span>
+                        <span class="px-badge px-badge-purple ms-1">&#x1F504; INTERCAMBIO</span>
+                    }
+                    else
+                    {
+                        <span class="px-badge px-badge-yellow">VENTA</span>
+                    }
                 </dd>
+
+                @if (!string.IsNullOrWhiteSpace(asset.TradeWants))
+                {
+                    <dt class="col-5">Busca a cambio</dt>
+                    <dd class="col-7" style="white-space:pre-line">@asset.TradeWants</dd>
+                }
 
                 @if (!string.IsNullOrWhiteSpace(asset.Description))
                 {
@@ -129,20 +155,37 @@
             }
             @if (User.Identity?.IsAuthenticated == true && !Model.IsCurrentUserOwner)
             {
-                if (Model.IsInWishlist)
+                if (asset.OfferType == TradeType.Trade || asset.OfferType == TradeType.Both)
                 {
-                    <span class="px-btn px-btn-secondary" style="cursor:default; opacity:0.7">
-                        &#9733; EN TU WISHLIST
-                    </span>
+                    <a asp-controller="Marketplace" asp-action="Create" asp-route-assetId="@asset.Id"
+                       class="px-btn" style="background:var(--gv-purple); color:#fff">
+                        &#x1F504; PROPONER INTERCAMBIO
+                    </a>
                 }
-                else
+                if (asset.OfferType == TradeType.Sale || asset.OfferType == TradeType.Both)
                 {
-                    <form method="post" asp-controller="Wishlist" asp-action="Add" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="assetId" value="@asset.Id" />
-                        <button type="submit" class="px-btn px-btn-primary">&#9733; GUARDAR EN WISHLIST</button>
-                    </form>
+                    if (Model.IsInWishlist)
+                    {
+                        <span class="px-btn px-btn-secondary" style="cursor:default; opacity:0.7">
+                            &#9733; EN TU WISHLIST
+                        </span>
+                    }
+                    else
+                    {
+                        <form method="post" asp-controller="Wishlist" asp-action="Add" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="assetId" value="@asset.Id" />
+                            <button type="submit" class="px-btn px-btn-primary">&#9733; GUARDAR EN WISHLIST</button>
+                        </form>
+                    }
                 }
+            }
+            @if (!User.Identity?.IsAuthenticated == true && (asset.OfferType == TradeType.Trade || asset.OfferType == TradeType.Both))
+            {
+                <a asp-area="Identity" asp-page="/Account/Login"
+                   class="px-btn" style="background:var(--gv-purple); color:#fff">
+                    &#x1F504; INICIAR SESIÓN PARA INTERCAMBIAR
+                </a>
             }
         </div>
     </div>

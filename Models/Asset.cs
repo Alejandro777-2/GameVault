@@ -42,6 +42,13 @@ public class Asset
     [Column(TypeName = "TEXT")]
     public decimal EstimatedValue { get; set; }
 
+    [Display(Name = "Tipo de oferta")]
+    public TradeType OfferType { get; set; } = TradeType.Sale;
+
+    [StringLength(300, ErrorMessage = "El texto de intercambio no puede superar los 300 caracteres.")]
+    [Display(Name = "¿Qué deseas a cambio?")]
+    public string? TradeWants { get; set; }
+
     [Required]
     public string OwnerId { get; set; } = string.Empty;
 

@@ -139,9 +139,33 @@ else
                             <span class="px-badge px-badge-yellow">@asset.Platform.GetDisplayName()</span>
                             <span class="px-badge @ConditionBadgeCls(asset.Condition)">@asset.Condition.GetDisplayName()</span>
                         </div>
-                        <p class="px-font fw-bold mb-0 mt-auto" style="color:var(--gv-purple); font-size:1.1rem">
-                            $ @asset.EstimatedValue.ToString("N0", new CultureInfo("es-EC"))
-                        </p>
+                        @if (asset.OfferType == TradeType.Sale)
+                        {
+                            <p class="px-font fw-bold mb-0 mt-auto" style="color:var(--gv-purple); font-size:1.1rem">
+                                $ @asset.EstimatedValue.ToString("N0", new CultureInfo("es-EC"))
+                            </p>
+                        }
+                        else if (asset.OfferType == TradeType.Trade)
+                        {
+                            <div class="mt-auto">
+                                <span class="px-badge px-badge-purple">&#x1F504; INTERCAMBIO</span>
+                                @if (!string.IsNullOrWhiteSpace(asset.TradeWants))
+                                {
+                                    <p class="px-font mb-0 mt-1 text-truncate"
+                                       style="font-size:0.72rem; color:var(--gv-muted)"
+                                       title="@asset.TradeWants">@asset.TradeWants</p>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-auto">
+                                <p class="px-font fw-bold mb-1" style="color:var(--gv-purple); font-size:1.1rem">
+                                    $ @asset.EstimatedValue.ToString("N0", new CultureInfo("es-EC"))
+                                </p>
+                                <span class="px-badge px-badge-purple" style="font-size:0.65rem">&#x1F504; También intercambio</span>
+                            </div>
+                        }
                     </div>
                     <div class="px-3 pb-2 pt-1" style="border-top:1px solid var(--gv-line)">
                         <small class="px-font" style="font-size:0.7rem; color:var(--gv-muted)">

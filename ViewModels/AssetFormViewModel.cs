@@ -39,6 +39,13 @@ public class AssetFormViewModel
     [Display(Name = "Valor estimado (USD)")]
     public decimal EstimatedValue { get; set; }
 
+    [Display(Name = "Tipo de oferta")]
+    public TradeType OfferType { get; set; } = TradeType.Sale;
+
+    [StringLength(300, ErrorMessage = "El texto de intercambio no puede superar los 300 caracteres.")]
+    [Display(Name = "¿Qué deseas a cambio?")]
+    public string? TradeWants { get; set; }
+
     [Display(Name = "Imagen del activo")]
     public IFormFile? ImageFile { get; set; }
 

@@ -14,7 +14,8 @@ public class GoogleGeocodingService : IGeocodingService
         ILogger<GoogleGeocodingService> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _apiKey = configuration["GoogleMaps:ApiKey"];
+        // Must read GeocodingApiKey (backend, unrestricted) — NOT ApiKey (frontend, referrer-restricted). Using the wrong key causes REQUEST_DENIED.
+        _apiKey = configuration["GoogleMaps:GeocodingApiKey"];
         _logger = logger;
     }
 

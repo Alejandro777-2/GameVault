@@ -13,4 +13,6 @@ public class AssetCardViewModel
     public string? ImageUrl { get; set; }
     public string OwnerDisplayName { get; set; } = string.Empty;
     public string OwnerId { get; set; } = string.Empty;
+    public TradeType OfferType { get; set; }
+    public string? TradeWants { get; set; }
 }

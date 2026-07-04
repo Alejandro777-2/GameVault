@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="row g-3 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label asp-for="Condition" class="form-label"></label>
                         <select asp-for="Condition" class="form-select"
                                 asp-items="Html.GetEnumSelectList<Condition>()">
@@ -53,18 +53,41 @@
                         </select>
                         <span asp-validation-for="Condition" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label asp-for="Year" class="form-label"></label>
                         <input asp-for="Year" class="form-control"
                                type="number" min="1970" max="2010" />
                         <span asp-validation-for="Year" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-4">
-                        <label asp-for="EstimatedValue" class="form-label"></label>
-                        <input asp-for="EstimatedValue" class="form-control"
-                               type="number" step="0.01" min="0" max="99999" />
-                        <span asp-validation-for="EstimatedValue" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">TIPO DE OFERTA</label>
+                    <div class="px-card p-3 d-flex gap-4 flex-wrap" style="background:var(--gv-yellow-soft)">
+                        <label class="px-font d-flex align-items-center gap-2" style="cursor:pointer; font-size:0.85rem; font-weight:800">
+                            <input type="radio" asp-for="OfferType" value="0" /> Venta
+                        </label>
+                        <label class="px-font d-flex align-items-center gap-2" style="cursor:pointer; font-size:0.85rem; font-weight:800">
+                            <input type="radio" asp-for="OfferType" value="1" /> Intercambio
+                        </label>
+                        <label class="px-font d-flex align-items-center gap-2" style="cursor:pointer; font-size:0.85rem; font-weight:800">
+                            <input type="radio" asp-for="OfferType" value="2" /> Venta o Intercambio
+                        </label>
                     </div>
+                </div>
+
+                <div id="price-group" class="mb-3">
+                    <label asp-for="EstimatedValue" class="form-label"></label>
+                    <input asp-for="EstimatedValue" class="form-control"
+                           type="number" step="0.01" min="0" max="99999" />
+                    <span asp-validation-for="EstimatedValue" class="text-danger small"></span>
+                </div>
+
+                <div id="trade-wants-group" class="mb-3" style="display:none">
+                    <label asp-for="TradeWants" class="form-label"></label>
+                    <textarea asp-for="TradeWants" class="form-control" style="height:80px"
+                              placeholder="¿Qué te gustaría recibir a cambio?"></textarea>
+                    <span asp-validation-for="TradeWants" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
@@ -119,4 +142,27 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+    (function () {
+        function updateOfferUi() {
+            var val = document.querySelector('input[name="OfferType"]:checked')?.value;
+            var priceGroup = document.getElementById('price-group');
+            var tradeGroup = document.getElementById('trade-wants-group');
+            if (val === '1') {
+                priceGroup.style.display = 'none';
+                tradeGroup.style.display = '';
+            } else if (val === '2') {
+                priceGroup.style.display = '';
+                tradeGroup.style.display = '';
+            } else {
+                priceGroup.style.display = '';
+                tradeGroup.style.display = 'none';
+            }
+        }
+        document.querySelectorAll('input[name="OfferType"]').forEach(function (r) {
+            r.addEventListener('change', updateOfferUi);
+        });
+        updateOfferUi();
+    })();
+    </script>
 }

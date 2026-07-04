@@ -28,7 +28,7 @@ public class CollectorsController : Controller
             })
             .ToListAsync();
 
-        var entries = usersWithAssets.Select(x => new CollectorMapEntry
+        var collectors = usersWithAssets.Select(x => new CollectorMapEntry
         {
             User = x.User,
             ActiveAssetCount = x.ActiveAssets.Count,
@@ -42,6 +42,25 @@ public class CollectorsController : Controller
         .OrderByDescending(e => e.ActiveAssetCount)
         .ToList();
 
-        return View(entries);
+        // Map markers are a subset of the same collectors list — only those with geocoded coordinates.
+        // This guarantees the two panels are always consistent (same universe of users).
+        var mapMarkers = collectors
+            .Where(e => e.User.Latitude.HasValue && e.User.Longitude.HasValue)
+            .Select(e => new MapCollectorViewModel
+            {
+                UserId = e.User.Id,
+                DisplayName = e.User.DisplayName,
+                Latitude = e.User.Latitude!.Value,
+                Longitude = e.User.Longitude!.Value,
+                City = e.User.City,
+                ActiveAssetCount = e.ActiveAssetCount,
+            })
+            .ToList();
+
+        return View(new ComunidadIndexViewModel
+        {
+            Collectors = collectors,
+            MapMarkers = mapMarkers,
+        });
     }
 }
